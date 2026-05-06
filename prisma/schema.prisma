@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+
+  users      OrganizationUser[]
+  proteins   Protein[]
+  flowcharts Flowchart[]
+}
+
+model OrganizationUser {
+  id             String       @id @default(cuid())
+  userId         String
+  organizationId String
+  role           String       @default("member")
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([userId, organizationId])
+}
+
+model Protein {
+  id             String       @id @default(cuid())
+  name           String
+  description    String?
+  organizationId String
+  createdAt      DateTime     @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  launches     Launch[]
+}
+
+model Flowchart {
+  id             String   @id @default(cuid())
+  name           String
+  organizationId String
+  nodes          Json
+  edges          Json
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+}
+
+model Launch {
+  id            String    @id @default(cuid())
+  proteinId     String
+  flowchartId   String
+  flowchartName String
+  year          Int
+  month         Int
+  status        String    @default("in_progress")
+  createdAt     DateTime  @default(now())
+  completedAt   DateTime?
+
+  protein Protein      @relation(fields: [proteinId], references: [id])
+  steps   LaunchStep[]
+
+  @@unique([proteinId, flowchartId, year, month])
+}
+
+model LaunchStep {
+  id          String    @id @default(cuid())
+  launchId    String
+  nodeId      String
+  type        String
+  content     String?
+  photoUrl    String?
+  quantity    Float?
+  completedAt DateTime?
+
+  launch Launch @relation(fields: [launchId], references: [id], onDelete: Cascade)
+}
