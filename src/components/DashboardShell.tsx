@@ -17,6 +17,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useT } from "./LocaleProvider";
 import { LocaleSwitcher } from "./LocaleSwitcher";
 import { DarkModeToggle } from "./DarkModeToggle";
+import { AppLogo } from "./AppLogo";
 import { createClient } from "@/lib/supabase/client";
 
 const NAV_LINKS = [
@@ -155,9 +156,7 @@ export function DashboardShell({
         >
           {!collapsed && (
             <div className="min-w-0 flex-1 pr-2">
-              <p className="font-bold text-gray-900 dark:text-white text-sm leading-tight truncate">
-                {t.nav.appName}
-              </p>
+              <AppLogo height={38} />
               {userEmail && (
                 <p className="text-xs text-gray-400 dark:text-gray-500 truncate">{userEmail}</p>
               )}
@@ -196,9 +195,7 @@ export function DashboardShell({
           {/* Header with close button */}
           <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 h-14 px-4 shrink-0">
             <div className="min-w-0 flex-1 pr-2">
-              <p className="font-bold text-gray-900 dark:text-white text-sm leading-tight">
-                {t.nav.appName}
-              </p>
+              <AppLogo height={38} />
               {userEmail && (
                 <p className="text-xs text-gray-400 dark:text-gray-500 truncate">{userEmail}</p>
               )}
@@ -229,9 +226,7 @@ export function DashboardShell({
           >
             <Menu className="w-5 h-5" />
           </button>
-          <span className="font-semibold text-gray-900 dark:text-white text-sm flex-1 truncate">
-            {t.nav.appName}
-          </span>
+          <AppLogo height={38} />
           <DarkModeToggle />
         </div>
 

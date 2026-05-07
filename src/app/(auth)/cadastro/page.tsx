@@ -5,6 +5,7 @@ import { useT } from "@/components/LocaleProvider";
 import { useState } from "react";
 import Link from "next/link";
 import { DarkModeToggle } from "@/components/DarkModeToggle";
+import { AppLogo } from "@/components/AppLogo";
 
 export default function SignUpPage() {
   const [email, setEmail] = useState("");
@@ -56,7 +57,7 @@ export default function SignUpPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t.auth.appName}</h2>
+          <div className="flex justify-center mb-2"><AppLogo height={48} /></div>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">{t.auth.checkEmail}</p>
           <Link
             href="/login"
@@ -76,7 +77,7 @@ export default function SignUpPage() {
       </div>
       <div className="w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-8">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t.auth.appName}</h1>
+          <div className="flex justify-center mb-2"><AppLogo height={56} /></div>
           <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">{t.auth.appSubtitle}</p>
         </div>
 
