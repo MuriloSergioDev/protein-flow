@@ -96,7 +96,7 @@ export const ptBR = {
   dashboard: {
     title: "Dashboard",
     subtitle: "Visão geral do beneficiamento",
-    newLaunch: "Novo Lançamento",
+    newLaunch: "Ver Lançamentos",
     selectLaunch: "Selecionar Lançamento",
     noLaunches: "Nenhum lançamento encontrado.",
     createLaunch: "Criar Lançamento",
@@ -314,7 +314,7 @@ export const en: Dict = {
   dashboard: {
     title: "Dashboard",
     subtitle: "Processing overview",
-    newLaunch: "New Launch",
+    newLaunch: "View Launches",
     selectLaunch: "Select Launch",
     noLaunches: "No launches found.",
     createLaunch: "Create Launch",
@@ -532,7 +532,7 @@ export const es: Dict = {
   dashboard: {
     title: "Dashboard",
     subtitle: "Resumen del procesamiento",
-    newLaunch: "Nuevo Lanzamiento",
+    newLaunch: "Ver Lanzamientos",
     selectLaunch: "Seleccionar Lanzamiento",
     noLaunches: "No se encontraron lanzamientos.",
     createLaunch: "Crear Lanzamiento",
