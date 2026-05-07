@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useT } from "@/components/LocaleProvider";
 import { useState } from "react";
 import Link from "next/link";
+import { DarkModeToggle } from "@/components/DarkModeToggle";
 
 export default function SignUpPage() {
   const [email, setEmail] = useState("");
@@ -45,7 +46,10 @@ export default function SignUpPage() {
 
   if (done) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 relative">
+        <div className="absolute top-4 right-4">
+          <DarkModeToggle />
+        </div>
         <div className="w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-8 text-center">
           <div className="w-12 h-12 bg-green-100 dark:bg-green-950/40 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -66,7 +70,10 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 relative">
+      <div className="absolute top-4 right-4">
+        <DarkModeToggle />
+      </div>
       <div className="w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-8">
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t.auth.appName}</h1>

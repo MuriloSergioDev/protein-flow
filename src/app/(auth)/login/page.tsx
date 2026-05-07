@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useT } from "@/components/LocaleProvider";
 import { useState } from "react";
 import Link from "next/link";
+import { DarkModeToggle } from "@/components/DarkModeToggle";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -38,7 +39,10 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 relative">
+      <div className="absolute top-4 right-4">
+        <DarkModeToggle />
+      </div>
       <div className="w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-8">
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t.auth.appName}</h1>
