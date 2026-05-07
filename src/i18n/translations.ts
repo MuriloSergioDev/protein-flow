@@ -203,6 +203,20 @@ export const ptBR = {
     deleteTitle: "Apagar proteína?",
     deleteDesc:
       "Esta proteína será removida permanentemente. Esta ação não pode ser desfeita.",
+    toastCreated: "Proteína criada.",
+    toastUpdated: "Proteína atualizada.",
+    toastDeleted: "Proteína apagada.",
+    toastError: "Erro ao salvar. Tente novamente.",
+  },
+
+  toast: {
+    flowchartSaved: "Fluxograma salvo.",
+    flowchartDeleted: "Fluxograma apagado.",
+    launchCreated: "Lançamento criado.",
+    launchDeleted: "Lançamentos apagados.",
+    launchSaved: "Dados salvos.",
+    launchCompleted: "Lançamento concluído.",
+    error: "Algo deu errado. Tente novamente.",
   },
 };
 
@@ -407,6 +421,20 @@ export const en: Dict = {
     deleteTitle: "Delete protein?",
     deleteDesc:
       "This protein will be permanently removed. This action cannot be undone.",
+    toastCreated: "Protein created.",
+    toastUpdated: "Protein updated.",
+    toastDeleted: "Protein deleted.",
+    toastError: "Error saving. Please try again.",
+  },
+
+  toast: {
+    flowchartSaved: "Flowchart saved.",
+    flowchartDeleted: "Flowchart deleted.",
+    launchCreated: "Launch created.",
+    launchDeleted: "Launches deleted.",
+    launchSaved: "Data saved.",
+    launchCompleted: "Launch completed.",
+    error: "Something went wrong. Please try again.",
   },
 };
 
@@ -611,6 +639,20 @@ export const es: Dict = {
     deleteTitle: "¿Eliminar proteína?",
     deleteDesc:
       "Esta proteína será eliminada permanentemente. Esta acción no se puede deshacer.",
+    toastCreated: "Proteína creada.",
+    toastUpdated: "Proteína actualizada.",
+    toastDeleted: "Proteína eliminada.",
+    toastError: "Error al guardar. Inténtelo de nuevo.",
+  },
+
+  toast: {
+    flowchartSaved: "Diagrama guardado.",
+    flowchartDeleted: "Diagrama eliminado.",
+    launchCreated: "Lanzamiento creado.",
+    launchDeleted: "Lanzamientos eliminados.",
+    launchSaved: "Datos guardados.",
+    launchCompleted: "Lanzamiento completado.",
+    error: "Algo salió mal. Inténtelo de nuevo.",
   },
 };
 

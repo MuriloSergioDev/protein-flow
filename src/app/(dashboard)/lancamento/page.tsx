@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { PenLine, Camera, CheckCircle2, Rocket, Upload } from "lucide-react";
 import { useT } from "@/components/LocaleProvider";
+import { useToast } from "@/components/Toast";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -78,6 +79,7 @@ function NewLaunchModal({
   onCreated: (launch: LaunchSummary) => void;
 }) {
   const t = useT();
+  const toast = useToast();
   const [proteinId, setProteinId]     = useState("");
   const [flowchartId, setFlowchartId] = useState("");
   const [saving, setSaving]           = useState(false);
@@ -103,9 +105,11 @@ function NewLaunchModal({
       });
       if (!res.ok) { const d = await res.json(); setError(d.error); return; }
       const launch: LaunchSummary = await res.json();
+      toast.success(t.toast.launchCreated);
       onCreated(launch);
     } catch {
       setError(t.launches.errorCreate);
+      toast.error(t.toast.error);
     } finally {
       setSaving(false);
     }
@@ -450,6 +454,7 @@ function StepsView({
   initialMonth: number;
 }) {
   const t = useT();
+  const toast = useToast();
   const flowchart = flowcharts.find((f) => f.id === launch.flowchartId);
   const [year, setYear]   = useState(initialYear);
   const [month, setMonth] = useState(initialMonth);
@@ -515,7 +520,6 @@ function StepsView({
     try {
       let launchId = currentLaunch.id;
 
-      // Create launch if it doesn't exist yet for this period
       if (!launchId) {
         const res = await fetch("/api/launches", {
           method: "POST",
@@ -535,6 +539,9 @@ function StepsView({
       const updated: LaunchSummary = await res.json();
       setCurrentLaunch(updated);
       onSaved(updated);
+      toast.success(complete ? t.toast.launchCompleted : t.toast.launchSaved);
+    } catch {
+      toast.error(t.toast.error);
     } finally {
       setSaving(false);
     }
@@ -747,9 +754,9 @@ function LaunchList({
   onDelete: (proteinId: string, flowchartId: string) => void;
 }) {
   const t = useT();
+  const toast = useToast();
   const [deleteTarget, setDeleteTarget] = useState<GroupKey | null>(null);
 
-  // Deduplicate by proteinId+flowchartId — keep most recent launch per group as representative
   const groups: LaunchSummary[] = [];
   const seen = new Set<string>();
   for (const l of launches) {
@@ -758,11 +765,16 @@ function LaunchList({
   }
 
   async function confirmDelete({ proteinId, flowchartId }: GroupKey) {
-    await fetch("/api/launches", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ proteinId, flowchartId }),
-    });
+    try {
+      await fetch("/api/launches", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ proteinId, flowchartId }),
+      });
+      toast.success(t.toast.launchDeleted);
+    } catch {
+      toast.error(t.toast.error);
+    }
     onDelete(proteinId, flowchartId);
     setDeleteTarget(null);
   }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import {
   ReactFlow,
   addEdge,
@@ -17,6 +17,7 @@ import AnnotationNode from "@/components/flowchart/AnnotationNode";
 import PhotoNode from "@/components/flowchart/PhotoNode";
 import { GitBranch } from "lucide-react";
 import { useT } from "@/components/LocaleProvider";
+import { useToast } from "@/components/Toast";
 
 const nodeTypes = { annotation: AnnotationNode, photo: PhotoNode };
 
@@ -40,6 +41,7 @@ function FlowchartEditor({
   onCancel: () => void;
 }) {
   const t = useT();
+  const toast = useToast();
   const [name, setName] = useState(initial.name);
   const [nodes, setNodes, onNodesChange] = useNodesState(initial.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initial.edges);
@@ -72,7 +74,10 @@ function FlowchartEditor({
       const fc: Flowchart = await res.json();
       onSave(fc);
       setSaved(true);
+      toast.success(t.toast.flowchartSaved);
       setTimeout(() => setSaved(false), 2000);
+    } catch {
+      toast.error(t.toast.error);
     } finally {
       setSaving(false);
     }
@@ -139,10 +144,13 @@ function FlowchartEditor({
 
 export default function FluxogramasPage() {
   const t = useT();
+  const toast = useToast();
   const [flowcharts, setFlowcharts] = useState<Flowchart[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<Flowchart | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [highlightId, setHighlightId] = useState<string | null>(null);
+  const itemRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   useEffect(() => {
     fetch("/api/flowcharts")
@@ -150,6 +158,14 @@ export default function FluxogramasPage() {
       .then((data) => setFlowcharts(Array.isArray(data) ? data : []))
       .finally(() => setLoading(false));
   }, []);
+
+  function scrollToItem(id: string) {
+    setHighlightId(id);
+    setTimeout(() => {
+      itemRefs.current[id]?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }, 50);
+    setTimeout(() => setHighlightId(null), 2000);
+  }
 
   function handleCreate() {
     setEditing({
@@ -176,14 +192,25 @@ export default function FluxogramasPage() {
     setEditing(fc);
   }
 
+  function handleBackFromEditor(fc: Flowchart | null) {
+    setEditing(null);
+    if (fc?.id) scrollToItem(fc.id);
+  }
+
   async function handleDelete(id: string) {
-    await fetch(`/api/flowcharts/${id}`, { method: "DELETE" });
-    setFlowcharts((prev) => prev.filter((f) => f.id !== id));
-    setDeleteId(null);
+    try {
+      await fetch(`/api/flowcharts/${id}`, { method: "DELETE" });
+      setFlowcharts((prev) => prev.filter((f) => f.id !== id));
+      toast.success(t.toast.flowchartDeleted);
+    } catch {
+      toast.error(t.toast.error);
+    } finally {
+      setDeleteId(null);
+    }
   }
 
   if (editing) {
-    return <FlowchartEditor initial={editing} onSave={handleSave} onCancel={() => setEditing(null)} />;
+    return <FlowchartEditor initial={editing} onSave={handleSave} onCancel={() => handleBackFromEditor(editing)} />;
   }
 
   return (
@@ -220,7 +247,13 @@ export default function FluxogramasPage() {
           {flowcharts.map((fc) => (
             <div
               key={fc.id}
-              className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 px-4 sm:px-5 py-3 sm:py-4 flex items-center justify-between gap-3"
+              ref={(el) => { itemRefs.current[fc.id] = el; }}
+              className={[
+                "rounded-xl border px-4 sm:px-5 py-3 sm:py-4 flex items-center justify-between gap-3 transition-colors duration-500",
+                highlightId === fc.id
+                  ? "bg-blue-50 dark:bg-blue-950/30 border-blue-300 dark:border-blue-700"
+                  : "bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800",
+              ].join(" ")}
             >
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{fc.name}</p>

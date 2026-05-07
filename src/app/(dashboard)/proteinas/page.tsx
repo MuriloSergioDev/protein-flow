@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FlaskConical } from "lucide-react";
 import { useT } from "@/components/LocaleProvider";
+import { useToast } from "@/components/Toast";
 
 type Protein = {
   id: string;
@@ -12,6 +13,7 @@ type Protein = {
 
 export default function ProteinasPage() {
   const t = useT();
+  const toast = useToast();
   const [proteins, setProteins] = useState<Protein[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -21,6 +23,8 @@ export default function ProteinasPage() {
   const [saving, setSaving] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [highlightId, setHighlightId] = useState<string | null>(null);
+  const itemRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   useEffect(() => {
     fetch("/api/proteins")
@@ -28,6 +32,14 @@ export default function ProteinasPage() {
       .then((data) => { setProteins(data); setLoading(false); })
       .catch(() => setLoading(false));
   }, []);
+
+  function scrollToItem(id: string) {
+    setHighlightId(id);
+    setTimeout(() => {
+      itemRefs.current[id]?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }, 50);
+    setTimeout(() => setHighlightId(null), 2000);
+  }
 
   function openCreate() {
     setEditingId(null);
@@ -66,6 +78,9 @@ export default function ProteinasPage() {
         });
         const updated: Protein = await res.json();
         setProteins((prev) => prev.map((p) => (p.id === editingId ? updated : p)));
+        closeForm();
+        toast.success(t.proteins.toastUpdated);
+        scrollToItem(updated.id);
       } else {
         const res = await fetch("/api/proteins", {
           method: "POST",
@@ -74,10 +89,13 @@ export default function ProteinasPage() {
         });
         const created: Protein = await res.json();
         setProteins((prev) => [...prev, created]);
+        closeForm();
+        toast.success(t.proteins.toastCreated);
+        scrollToItem(created.id);
       }
-      closeForm();
     } catch {
       setError(t.proteins.saveError);
+      toast.error(t.proteins.toastError);
     } finally {
       setSaving(false);
     }
@@ -91,8 +109,9 @@ export default function ProteinasPage() {
         body: JSON.stringify({ id }),
       });
       setProteins((prev) => prev.filter((p) => p.id !== id));
+      toast.success(t.proteins.toastDeleted);
     } catch {
-      // silent
+      toast.error(t.proteins.toastError);
     } finally {
       setDeleteId(null);
     }
@@ -132,7 +151,13 @@ export default function ProteinasPage() {
           {proteins.map((p) => (
             <div
               key={p.id}
-              className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 px-4 sm:px-5 py-3 sm:py-4 flex items-center justify-between gap-3"
+              ref={(el) => { itemRefs.current[p.id] = el; }}
+              className={[
+                "rounded-xl border px-4 sm:px-5 py-3 sm:py-4 flex items-center justify-between gap-3 transition-colors duration-500",
+                highlightId === p.id
+                  ? "bg-blue-50 dark:bg-blue-950/30 border-blue-300 dark:border-blue-700"
+                  : "bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800",
+              ].join(" ")}
             >
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{p.name}</p>
@@ -159,7 +184,6 @@ export default function ProteinasPage() {
         </div>
       )}
 
-      {/* Create / Edit modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4">
           <div className="bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl border border-gray-200 dark:border-gray-800 p-6 w-full sm:max-w-sm shadow-xl">
@@ -212,7 +236,6 @@ export default function ProteinasPage() {
         </div>
       )}
 
-      {/* Delete confirmation modal */}
       {deleteId && (
         <div className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4">
           <div className="bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl border border-gray-200 dark:border-gray-800 p-6 w-full sm:max-w-sm shadow-xl">
