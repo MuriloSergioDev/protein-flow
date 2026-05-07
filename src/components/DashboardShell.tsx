@@ -240,8 +240,15 @@ export function DashboardShell({
           {children}
         </main>
 
-        <footer className="shrink-0 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-3 flex items-center justify-center gap-2">
-          <Image src="/logo-ms.png" alt="MS Serviços de TI" width={20} height={20} className="opacity-70 dark:opacity-50" />
+        <footer className="shrink-0 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-3 flex items-center justify-center gap-3">
+          <Image
+            src="/logo-ms.png"
+            alt="MS Serviços de TI"
+            width={56}
+            height={20}
+            style={{ height: "20px", width: "auto" }}
+            className="invert opacity-40 dark:invert-0 dark:opacity-50"
+          />
           <p className="text-xs text-gray-400 dark:text-gray-500">
             © {new Date().getFullYear()} MS Serviços de TI. Todos os direitos reservados.
           </p>
