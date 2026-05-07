@@ -12,6 +12,7 @@ import {
   FlaskConical,
   LogOut,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useT } from "./LocaleProvider";
@@ -238,6 +239,13 @@ export function DashboardShell({
         <main className="flex-1 overflow-auto">
           {children}
         </main>
+
+        <footer className="shrink-0 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-3 flex items-center justify-center gap-2">
+          <Image src="/logo-ms.png" alt="MS Serviços de TI" width={20} height={20} className="opacity-70 dark:opacity-50" />
+          <p className="text-xs text-gray-400 dark:text-gray-500">
+            © {new Date().getFullYear()} MS Serviços de TI. Todos os direitos reservados.
+          </p>
+        </footer>
       </div>
     </div>
   );
