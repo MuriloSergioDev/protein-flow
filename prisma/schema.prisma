@@ -7,47 +7,24 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Organization {
-  id        String   @id @default(cuid())
-  name      String
-  createdAt DateTime @default(now())
-
-  users      OrganizationUser[]
-  proteins   Protein[]
-  flowcharts Flowchart[]
-}
-
-model OrganizationUser {
-  id             String       @id @default(cuid())
-  userId         String
-  organizationId String
-  role           String       @default("member")
-  organization   Organization @relation(fields: [organizationId], references: [id])
-
-  @@unique([userId, organizationId])
-}
-
 model Protein {
-  id             String       @id @default(cuid())
-  name           String
-  description    String?
-  organizationId String
-  createdAt      DateTime     @default(now())
+  id          String    @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  createdAt   DateTime  @default(now())
 
-  organization Organization @relation(fields: [organizationId], references: [id])
-  launches     Launch[]
+  launches Launch[]
 }
 
 model Flowchart {
-  id             String   @id @default(cuid())
-  name           String
-  organizationId String
-  nodes          Json
-  edges          Json
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  organization Organization @relation(fields: [organizationId], references: [id])
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  nodes     Json
+  edges     Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Launch {

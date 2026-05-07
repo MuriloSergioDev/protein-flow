@@ -41,10 +41,6 @@ const YEARS = Array.from({ length: 5 }, (_, i) => CURRENT_YEAR - i);
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function loadFlowcharts(): Flowchart[] {
-  try { return JSON.parse(localStorage.getItem("flowcharts") ?? "[]"); } catch { return []; }
-}
-
 function compressImage(file: File, maxWidth = 900): Promise<string> {
   return new Promise((resolve) => {
     const img = new Image();
@@ -893,13 +889,14 @@ export default function LancamentoPage() {
   const [stepsBackTo, setStepsBackTo] = useState<"period" | "overview">("period");
 
   useEffect(() => {
-    setFlowcharts(loadFlowcharts());
     Promise.all([
       fetch("/api/launches").then((r) => r.json()),
       fetch("/api/proteins").then((r) => r.json()),
-    ]).then(([ls, ps]) => {
-      setLaunches(ls);
-      setProteins(ps);
+      fetch("/api/flowcharts").then((r) => r.json()),
+    ]).then(([ls, ps, fcs]) => {
+      setLaunches(Array.isArray(ls) ? ls : []);
+      setProteins(Array.isArray(ps) ? ps : []);
+      setFlowcharts(Array.isArray(fcs) ? fcs : []);
       setLoading(false);
     }).catch(() => setLoading(false));
   }, []);

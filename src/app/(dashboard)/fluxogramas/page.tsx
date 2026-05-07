@@ -28,21 +28,6 @@ type Flowchart = {
   updatedAt: string;
 };
 
-function loadFlowcharts(): Flowchart[] {
-  try {
-    return JSON.parse(localStorage.getItem("flowcharts") ?? "[]");
-  } catch {
-    return [];
-  }
-}
-
-function saveFlowcharts(list: Flowchart[]) {
-  localStorage.setItem("flowcharts", JSON.stringify(list));
-  if (list.length > 0) {
-    localStorage.setItem("flowchart_draft", JSON.stringify(list[list.length - 1]));
-  }
-}
-
 // ─── Editor ──────────────────────────────────────────────────────────────────
 
 function FlowchartEditor({
@@ -58,7 +43,9 @@ function FlowchartEditor({
   const [name, setName] = useState(initial.name);
   const [nodes, setNodes, onNodesChange] = useNodesState(initial.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initial.edges);
+  const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const isNew = !initial.updatedAt;
 
   const onConnect = useCallback(
     (connection: Connection) => setEdges((eds) => addEdge(connection, eds)),
@@ -75,15 +62,24 @@ function FlowchartEditor({
     setNodes((nds) => [...nds, newNode]);
   }
 
-  function handleSave() {
-    onSave({ ...initial, name, nodes, edges, updatedAt: new Date().toISOString() });
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  async function handleSave() {
+    setSaving(true);
+    try {
+      const body = JSON.stringify({ name, nodes, edges });
+      const res = isNew
+        ? await fetch("/api/flowcharts", { method: "POST", headers: { "Content-Type": "application/json" }, body })
+        : await fetch(`/api/flowcharts/${initial.id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body });
+      const fc: Flowchart = await res.json();
+      onSave(fc);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
     <div className="flex flex-col h-[calc(100dvh-3.5rem)] lg:h-screen">
-      {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-2 px-3 sm:px-6 py-2 sm:py-3 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shrink-0">
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <button
@@ -114,9 +110,10 @@ function FlowchartEditor({
           </button>
           <button
             onClick={handleSave}
-            className="bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-medium px-3 sm:px-4 py-1.5 rounded-lg transition-colors whitespace-nowrap"
+            disabled={saving}
+            className="bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-medium px-3 sm:px-4 py-1.5 rounded-lg transition-colors disabled:opacity-50 whitespace-nowrap"
           >
-            {saved ? t.flowcharts.saved : t.flowcharts.save}
+            {saved ? t.flowcharts.saved : saving ? t.common.saving : t.flowcharts.save}
           </button>
         </div>
       </div>
@@ -143,16 +140,20 @@ function FlowchartEditor({
 export default function FluxogramasPage() {
   const t = useT();
   const [flowcharts, setFlowcharts] = useState<Flowchart[]>([]);
+  const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<Flowchart | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
-    setFlowcharts(loadFlowcharts());
+    fetch("/api/flowcharts")
+      .then((r) => r.json())
+      .then((data) => setFlowcharts(Array.isArray(data) ? data : []))
+      .finally(() => setLoading(false));
   }, []);
 
   function handleCreate() {
     setEditing({
-      id: `${Date.now()}`,
+      id: "",
       name: t.flowcharts.newFlowchartName,
       nodes: [
         {
@@ -163,25 +164,21 @@ export default function FluxogramasPage() {
         },
       ],
       edges: [],
-      updatedAt: new Date().toISOString(),
+      updatedAt: "",
     });
   }
 
   function handleSave(fc: Flowchart) {
     setFlowcharts((prev) => {
       const exists = prev.find((f) => f.id === fc.id);
-      const next = exists ? prev.map((f) => (f.id === fc.id ? fc : f)) : [...prev, fc];
-      saveFlowcharts(next);
-      return next;
+      return exists ? prev.map((f) => (f.id === fc.id ? fc : f)) : [fc, ...prev];
     });
+    setEditing(fc);
   }
 
-  function handleDelete(id: string) {
-    setFlowcharts((prev) => {
-      const next = prev.filter((f) => f.id !== id);
-      saveFlowcharts(next);
-      return next;
-    });
+  async function handleDelete(id: string) {
+    await fetch(`/api/flowcharts/${id}`, { method: "DELETE" });
+    setFlowcharts((prev) => prev.filter((f) => f.id !== id));
     setDeleteId(null);
   }
 
@@ -204,7 +201,9 @@ export default function FluxogramasPage() {
         </button>
       </div>
 
-      {flowcharts.length === 0 ? (
+      {loading ? (
+        <div className="text-sm text-gray-400 dark:text-gray-500 py-12 text-center">{t.common.loading}</div>
+      ) : flowcharts.length === 0 ? (
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-10 sm:p-12 text-center">
           <div className="flex justify-center mb-4"><GitBranch className="w-10 h-10 text-gray-300 dark:text-gray-600" /></div>
           <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-2">{t.flowcharts.noFlowcharts}</h3>
@@ -226,7 +225,7 @@ export default function FluxogramasPage() {
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{fc.name}</p>
                 <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 truncate">
-                  {`${fc.nodes.length} ${fc.nodes.length !== 1 ? t.flowcharts.steps : t.flowcharts.step}`} · {t.flowcharts.updatedAt}{" "}
+                  {`${(fc.nodes as Node[]).length} ${(fc.nodes as Node[]).length !== 1 ? t.flowcharts.steps : t.flowcharts.step}`} · {t.flowcharts.updatedAt}{" "}
                   {new Date(fc.updatedAt).toLocaleDateString("pt-BR")}
                 </p>
               </div>
