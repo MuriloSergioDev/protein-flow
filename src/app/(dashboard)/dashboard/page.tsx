@@ -51,10 +51,6 @@ const YEARS = Array.from({ length: 5 }, (_, i) => CURRENT_YEAR - i);
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function loadFlowcharts(): Flowchart[] {
-  try { return JSON.parse(localStorage.getItem("flowcharts") ?? "[]"); } catch { return []; }
-}
-
 function barColor(status: string | null) {
   if (status === "completed")   return "#22c55e";
   if (status === "in_progress") return "#f59e0b";
@@ -95,11 +91,16 @@ export default function DashboardPage() {
   const [loadingChart, setLoadingChart]         = useState(false);
 
   useEffect(() => {
-    setFlowcharts(loadFlowcharts());
-    fetch("/api/launches")
-      .then((r) => r.json())
-      .then((data) => { setLaunches(Array.isArray(data) ? data : []); setLoadingLaunches(false); })
-      .catch(() => setLoadingLaunches(false));
+    Promise.all([
+      fetch("/api/launches").then((r) => r.json()),
+      fetch("/api/flowcharts").then((r) => r.json()),
+    ])
+      .then(([ls, fcs]) => {
+        setLaunches(Array.isArray(ls) ? ls : []);
+        setFlowcharts(Array.isArray(fcs) ? fcs : []);
+      })
+      .catch(() => {})
+      .finally(() => setLoadingLaunches(false));
   }, []);
 
   // Unique protein+flowchart groups
