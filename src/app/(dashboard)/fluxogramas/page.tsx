@@ -73,9 +73,13 @@ function FlowchartEditor({
         : await fetch(`/api/flowcharts/${initial.id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body });
       const fc: Flowchart = await res.json();
       onSave(fc);
-      setSaved(true);
       toast.success(t.toast.flowchartSaved);
-      setTimeout(() => setSaved(false), 2000);
+      if (isNew) {
+        onCancel();
+      } else {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+      }
     } catch {
       toast.error(t.toast.error);
     } finally {

@@ -443,6 +443,7 @@ function StepsView({
   flowcharts,
   onBack,
   onSaved,
+  onSaveComplete,
   initialYear,
   initialMonth,
 }: {
@@ -450,6 +451,7 @@ function StepsView({
   flowcharts: Flowchart[];
   onBack: () => void;
   onSaved: (updated: LaunchSummary) => void;
+  onSaveComplete: (updated: LaunchSummary, year: number, month: number) => void;
   initialYear: number;
   initialMonth: number;
 }) {
@@ -540,6 +542,7 @@ function StepsView({
       setCurrentLaunch(updated);
       onSaved(updated);
       toast.success(complete ? t.toast.launchCompleted : t.toast.launchSaved);
+      onSaveComplete(updated, year, month);
     } catch {
       toast.error(t.toast.error);
     } finally {
@@ -927,6 +930,13 @@ export default function LancamentoPage() {
     setLaunches((prev) => prev.map((l) => l.id === updated.id ? updated : l));
   }
 
+  function handleSaveComplete(updated: LaunchSummary, year: number, month: number) {
+    setLaunches((prev) => prev.map((l) => l.id === updated.id ? updated : l));
+    setSelectedGroup(updated);
+    setSelectedPeriod({ year, month });
+    setView("overview");
+  }
+
   if (view === "steps" && selectedGroup && selectedPeriod) {
     return (
       <StepsView
@@ -934,6 +944,7 @@ export default function LancamentoPage() {
         flowcharts={flowcharts}
         onBack={() => setView(stepsBackTo)}
         onSaved={handleSaved}
+        onSaveComplete={handleSaveComplete}
         initialYear={selectedPeriod.year}
         initialMonth={selectedPeriod.month}
       />
