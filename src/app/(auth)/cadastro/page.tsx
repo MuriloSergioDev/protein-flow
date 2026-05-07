@@ -5,36 +5,64 @@ import { useT } from "@/components/LocaleProvider";
 import { useState } from "react";
 import Link from "next/link";
 
-export default function LoginPage() {
+export default function SignUpPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [done, setDone] = useState(false);
   const t = useT();
 
-  async function handleEmailLogin(e: React.FormEvent) {
+  async function handleSignUp(e: React.FormEvent) {
     e.preventDefault();
+    if (password !== confirm) {
+      setError(t.auth.passwordMismatch);
+      return;
+    }
     setLoading(true);
     setError(null);
 
     const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signUp({ email, password });
 
     if (error) {
       setError(error.message);
       setLoading(false);
     } else {
-      window.location.href = "/dashboard";
+      setDone(true);
     }
   }
 
-  async function handleGoogleLogin() {
+  async function handleGoogleSignUp() {
     setLoading(true);
     const supabase = createClient();
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: `${window.location.origin}/auth/callback` },
     });
+  }
+
+  if (done) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
+        <div className="w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-8 text-center">
+          <div className="w-12 h-12 bg-green-100 dark:bg-green-950/40 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t.auth.appName}</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">{t.auth.checkEmail}</p>
+          <Link
+            href="/login"
+            className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+          >
+            {t.auth.alreadyHaveAccount} {t.auth.signIn}
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -45,7 +73,7 @@ export default function LoginPage() {
           <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">{t.auth.appSubtitle}</p>
         </div>
 
-        <form onSubmit={handleEmailLogin} className="space-y-4">
+        <form onSubmit={handleSignUp} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t.auth.email}</label>
             <input
@@ -65,6 +93,20 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              minLength={6}
+              className="w-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+              placeholder={t.auth.passwordPlaceholder}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t.auth.confirmPassword}</label>
+            <input
+              type="password"
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              required
+              minLength={6}
               className="w-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400 dark:placeholder:text-gray-500"
               placeholder={t.auth.passwordPlaceholder}
             />
@@ -79,7 +121,7 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg text-sm transition-colors disabled:opacity-50"
           >
-            {loading ? t.auth.loggingIn : t.auth.login}
+            {loading ? t.auth.registering : t.auth.register}
           </button>
         </form>
 
@@ -90,7 +132,7 @@ export default function LoginPage() {
         </div>
 
         <button
-          onClick={handleGoogleLogin}
+          onClick={handleGoogleSignUp}
           disabled={loading}
           className="w-full flex items-center justify-center gap-3 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg py-2 text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors disabled:opacity-50"
         >
@@ -104,9 +146,9 @@ export default function LoginPage() {
         </button>
 
         <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
-          {t.auth.noAccount}{" "}
-          <Link href="/cadastro" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">
-            {t.auth.signUp}
+          {t.auth.alreadyHaveAccount}{" "}
+          <Link href="/login" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">
+            {t.auth.signIn}
           </Link>
         </p>
       </div>

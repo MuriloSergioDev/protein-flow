@@ -32,7 +32,9 @@ export async function proxy(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  const isAuthRoute = request.nextUrl.pathname.startsWith("/login");
+  const isAuthRoute =
+    request.nextUrl.pathname.startsWith("/login") ||
+    request.nextUrl.pathname.startsWith("/cadastro");
   const isCallbackRoute = request.nextUrl.pathname.startsWith("/auth");
 
   if (!user && !isAuthRoute && !isCallbackRoute) {
